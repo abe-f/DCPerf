@@ -186,14 +186,16 @@ def get_client_cmd(args, n_seconds):
         f"--key={s_key}",
         "--tls",
         "--tls-skip-verify",
-        "--key-pattern=R:R",
+        f"--key-pattern={args.access_dist.replace('_', ':')}",
+        #f"--key-pattern=R:R",
         "--distinct-client-seed",
         "--randomize",
         "-R",
         "--hide-histogram",
         "--expiry-range=1800-1802",
         f"--data-size-range={args.data_size_min}-{args.data_size_max}",
-        "--ratio=0:1",
+        f"--ratio={args.set_get_ratio.replace('_', ':')}",
+        #f"--ratio=0:1"
         f"--key-minimum={n_key_min}",
         f"--key-maximum={n_key_max}",
         "-t",
@@ -296,6 +298,12 @@ def init_parser():
         help="port number of server",
     )
     # client-side arguments
+    client_parser.add_argument(
+        "--set-get-ratio", type=str, default="0_1", help="Set to 0_1 for 0 writes, 30_70 for 30% writes"
+    )
+    client_parser.add_argument(
+        "--access-dist", type=str, default="R_R", help="Set this to X_X, where X is either R, G, or Z for random, gaussian, or zipf distribution (SET_GET)"
+    )
     client_parser.add_argument(
         "--server-hostname", type=str, required=True, help="server hostname"
     )

@@ -17,7 +17,7 @@ from benchpress.lib.job import get_target_jobs
 from benchpress.lib.reporter_factory import ReporterFactory
 
 from .command import BenchpressCommand
-
+import re
 
 logger = logging.getLogger(__name__)
 
@@ -121,7 +121,58 @@ class RunCommand(BenchpressCommand):
         role_in = {}
         if args.role_input:
             try:
-                role_in = json.loads(args.role_input)
+                # need to add this since i'm trying to send the command over SSH and I can not for the life of me get it to send the quotes in the json string
+                # so this just adds the quotes if they are needed to the json string (benchmark arguments)
+                if 1: # SET THIS TO 1 if CLIENT AND 0 if SERVER
+                    # Regular expression pattern to match words and non-word characters
+                    pattern = r'([A-Za-z0-9_.]+|[^A-Za-z0-9_.])'
+
+                    # Tokenize the string
+                    tokens = re.findall(pattern, args.role_input)
+
+                    # Function to check if a token is a number
+                    def is_number(s):
+                        if '_' in s:
+                            return False
+                        try:
+                            float(s)
+                            return True
+                        except ValueError:
+                            return False
+
+                    # Initialize state and a list to hold new tokens
+                    state = 'key'
+                    new_tokens = []
+
+                    # Process each token
+                    for token in tokens:
+                        if token == ':':
+                            new_tokens.append(token)
+                            state = 'value'  # Next token will be a value
+                        elif token == ',':
+                            new_tokens.append(token)
+                            state = 'key'  # Next token will be a key
+                        elif token.strip() == '':
+                            new_tokens.append(token)  # Preserve whitespace
+                        elif token in ['{', '}']:
+                            new_tokens.append(token)  # Preserve braces
+                        elif re.match(r'[A-Za-z0-9_.]+', token):
+                            if state == 'key':
+                                new_tokens.append('"' + token + '"')  # Add quotes around keys
+                            elif state == 'value':
+                                if is_number(token):
+                                    new_tokens.append(token)  # Keep numbers as is
+                                else:
+                                    new_tokens.append('"' + token + '"')  # Add quotes around strings
+                        else:
+                            new_tokens.append(token)  # Preserve other characters
+
+                    # Join the tokens back into a string
+                    result = ''.join(new_tokens)
+
+                    role_in = json.loads(result)
+                else: # 
+                    role_in = json.loads(args.role_input)
             except Exception:
                 click.echo("role_input must be json dictionary format")
                 click.echo("example input format for iperf:")

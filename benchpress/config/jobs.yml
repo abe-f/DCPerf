@@ -401,6 +401,8 @@
         - '--test-time={test_time}'
         - '--real'
       vars:
+        - 'single_socket=0'
+        - 'num_ccd=8'
         - 'interface_name=eth0'
         - 'memsize=64'
         - 'port_number=11211'
@@ -409,6 +411,8 @@
     client:
       args:
         - 'client'
+        - '--set-get-ratio={set_get_ratio}'
+        - '--access-dist={access_dist}'
         - '--clients-per-thread={clients_per_thread}'
         - '--server-hostname={server_hostname}'
         - '--server-memsize={server_memsize}'
@@ -422,6 +426,8 @@
         - '--sanity={sanity}'
         - '--real'
       vars:
+        - 'set_get_ratio=0:1'
+        - 'access_dist=R:R'
         - 'server_hostname'
         - 'server_memsize=64'
         - 'clients_per_thread=380'
@@ -446,6 +452,10 @@
       of benchpress.log for instructions on starting clients.
       MAKE SURE to start clients within 1 minute.
   args:
+    - '--single-socket={single_socket}'
+    - '--num-ccd={num_ccd}'
+    - '--set-get-ratio={set_get_ratio}'
+    - '--access-dist={access_dist}'
     - '--num-servers={num_servers}'
     - '--memsize={memsize}'
     - '--fast-threads-ratio={fast_threads_ratio}'
@@ -462,6 +472,10 @@
     - '--sanity={sanity}'
     - '--real'
   vars:
+    - 'single_socket=1'
+    - 'num_ccd=4'
+    - 'set_get_ratio=0:1'
+    - 'access_dist=R:R'
     - 'num_servers=0'
     - 'memsize=0'
     - 'fast_threads_ratio=0.75'
