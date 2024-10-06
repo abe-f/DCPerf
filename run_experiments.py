@@ -38,8 +38,6 @@ def run_taobench(single_socket, memsize, num_cores, set_get_ratio, access_dist):
 
     cpu_mask = ','.join([str(2 * i) for i in range(num_cores * 2)])
 
-    #print(cpu_mask)
-    return
     # Make output folder
     output_folder_name = f"memsize_{memsize}_numcores_{num_cores}_accessdist_{access_dist.replace(':', '_')}_setgetratio_{set_get_ratio.replace(':', '_')}"
     if os.path.isdir(output_folder_name):
@@ -50,14 +48,14 @@ def run_taobench(single_socket, memsize, num_cores, set_get_ratio, access_dist):
     os.system(f'mkdir {output_folder_name}')
 
     warmup_time = 1200 # default 1200
-    test_time = 720 # default 720
+    test_time = 480 # default 720
     # \"test_time\": 10,
     # \"warmup_time\": 10,
     if perf_tracking == 'perf':
         #server_command = f"./benchpress_cli.py run tao_bench_autoscale -i '{{\"num_servers\": 1, \"interface_name\": \"{node0_interface}\", \"server_hostname\": \"10.10.1.1\", \"memsize\": {memsize}, \"single_socket\": {single_socket}, \"num_ccd\": {num_ccd}, \"set_get_ratio\": \"{set_get_ratio}\", \"access_dist\": \"{access_dist}\ -k perf"}}'"
         #  taskset -c 0,2 ./benchpress_cli.py run tao_bench_autoscale -i '{"num_servers": 1, "interface_name": "ens2f0", "server_hostname": "10.10.1.1", "memsize": 100, "single_socket": 1, "core_list":"all", "set_get_ratio": "0_1", "access_dist": "R_R"}' -k perf
 
-        server_command = f"taskset -c {cpu_mask} ./benchpress_cli.py run tao_bench_autoscale -i '{{\"num_servers\": 1, \"interface_name\": \"{node0_interface}\", \"server_hostname\": \"10.10.1.1\", \"memsize\": {memsize}, \"single_socket\": {single_socket}, \"warmup_time\": {warmup_time}, \"test_time\": {test_time}, \"set_get_ratio\": \"{set_get_ratio}\", \"access_dist\": \"{access_dist}\"}} -k perf'"
+        server_command = f"taskset -c {cpu_mask} ./benchpress_cli.py run tao_bench_autoscale -i '{{\"num_servers\": 1, \"interface_name\": \"{node0_interface}\", \"server_hostname\": \"10.10.1.1\", \"memsize\": {memsize}, \"single_socket\": {single_socket}, \"warmup_time\": {warmup_time}, \"test_time\": {test_time}, \"set_get_ratio\": \"{set_get_ratio}\", \"access_dist\": \"{access_dist}\"}}' -k perf"
     else:
         server_command = f"./benchpress_cli.py run tao_bench_autoscale -i '{{\"num_servers\": 1, \"interface_name\": \"{node0_interface}\", \"server_hostname\": \"10.10.1.1\", \"memsize\": {memsize}, \"single_socket\": {single_socket}, \"set_get_ratio\": \"{set_get_ratio}\", \"access_dist\": \"{access_dist}\"}}'"
     print(server_command)
@@ -93,7 +91,7 @@ def run_taobench(single_socket, memsize, num_cores, set_get_ratio, access_dist):
 
     # Wait for 1620
     if perf_tracking == 'perf':
-        time.sleep(2190)
+        time.sleep(warmup_time + test_time + 300)
 
     elif perf_tracking == 'amd_uprof':
         # Start profiling. This should be in the hot period
@@ -121,14 +119,14 @@ def run_taobench(single_socket, memsize, num_cores, set_get_ratio, access_dist):
     #os.system(f'mv *ue {output_folder_name}/')
 
     # Move client outputs and client benchpresses
-    os.system(f'scp -i /users/af28/.ssh/id_ed25519 {node1_name}:/mydata/DCPerf/client1_out.txt /mydata/DCPerf/{output_folder_name}/client1_out.txt')
-    os.system(f'scp -i /users/af28/.ssh/id_ed25519 {node2_name}:/mydata/DCPerf/client2_out.txt /mydata/DCPerf/{output_folder_name}/client2_out.txt')
+    os.system(f'scp -i /users/af28/.ssh/id_ed25519.pub {node1_name}:/mydata/DCPerf/client1_out.txt /mydata/DCPerf/{output_folder_name}/client1_out.txt')
+    os.system(f'scp -i /users/af28/.ssh/id_ed25519.pub {node2_name}:/mydata/DCPerf/client2_out.txt /mydata/DCPerf/{output_folder_name}/client2_out.txt')
 
-    os.system(f'scp -i /users/af28/.ssh/id_ed25519 {node1_name}:/mydata/DCPerf/benchpress.log /mydata/DCPerf/{output_folder_name}/client1_benchpress.log')
-    os.system(f'scp -i /users/af28/.ssh/id_ed25519 {node2_name}:/mydata/DCPerf/benchpress.log /mydata/DCPerf/{output_folder_name}/client2_benchpress.log')
+    os.system(f'scp -i /users/af28/.ssh/id_ed25519.pub {node1_name}:/mydata/DCPerf/benchpress.log /mydata/DCPerf/{output_folder_name}/client1_benchpress.log')
+    os.system(f'scp -i /users/af28/.ssh/id_ed25519.pub {node2_name}:/mydata/DCPerf/benchpress.log /mydata/DCPerf/{output_folder_name}/client2_benchpress.log')
 
-    os.system(f"ssh -i /users/af28/.ssh/id_ed25519 {node1_name} sudo bash -c \"truncate -s 0 client1_out.txt; truncate -s 0 benchpress.log;\"")
-    os.system(f"ssh -i /users/af28/.ssh/id_ed25519 {node2_name} sudo bash -c \"truncate -s 0 client2_out.txt; truncate -s 0 benchpress.log;\"")
+    os.system(f"ssh -i /users/af28/.ssh/id_ed25519.pub {node1_name} sudo bash -c \"truncate -s 0 client1_out.txt; truncate -s 0 benchpress.log;\"")
+    os.system(f"ssh -i /users/af28/.ssh/id_ed25519.pub {node2_name} sudo bash -c \"truncate -s 0 client2_out.txt; truncate -s 0 benchpress.log;\"")
     
     time.sleep(30)
 
@@ -136,8 +134,8 @@ def run_taobench(single_socket, memsize, num_cores, set_get_ratio, access_dist):
 memsizes = [64]
 num_cores_list = [9, 18, 27, 36]
 #core_lists = [','.join([str(2 * i) for i in range(n * 2)]) for n in [1, 2, 4, 8, 16, 32]]
-set_get_ratios = ['1_9']
-access_dists = ['G_G']
+set_get_ratios = ['0_1']
+access_dists = ['R_R']
 
 for memsize in memsizes:
     for num_cores in num_cores_list:
