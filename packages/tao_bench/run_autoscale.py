@@ -67,6 +67,7 @@ def check_nodes_of_cpu_range(cpu_ranges, numa_nodes):
 
 
 def compose_server_cmd(args, cpu_core_range, memsize, port_number):
+    """
     if args.num_ccd != 0 and args.single_socket and 0:
         if args.num_ccd == 1:
             cpu_core_range = '0-3,64-67'
@@ -85,6 +86,7 @@ def compose_server_cmd(args, cpu_core_range, memsize, port_number):
             cpu_core_range = '0,2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32,34,36,38,40,42,44,46,48,50,52,54,56,58,60,62,64,66,68,70'
         elif args.num_ccd == 4: # 36/36 cores
             cpu_core_range = '0,2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32,34,36,38,40,42,44,46,48,50,52,54,56,58,60,62,64,66,68,70,72,74,76,78,80,82,84,86,88,90,92,94,96,98,100,102,104,106,108,110,112,114,116,118,120,122,124,126,128,130,132,134,136,138,140,142'
+    """
 
     cmd = [
         "taskset",
@@ -403,11 +405,14 @@ def init_parser():
     )
     # new args
     parser.add_argument(
-        "--single-socket", type=int, default=1, help="Set to 1 to run on a single socket"
+        "--core-list", type=str, default="all", help="String that specifies set of cores to execute on"
     )
     parser.add_argument(
-        "--num-ccd", type=int, default=8, help="Number of CCDs to use, each with 4 cores"
+        "--single-socket", type=int, default=1, help="Set to 1 to run on a single socket"
     )
+    #parser.add_argument(
+    #    "--num-ccd", type=int, default=8, help="Number of CCDs to use, each with 4 cores"
+    #)
     parser.add_argument(
         "--set-get-ratio", type=str, default="0_1", help="Set to 0:1 for 0 writes, 30:70 for 30% writes"
     )

@@ -5,8 +5,8 @@ import shutil
 import shlex
 
 node0_interface = 'ens2f0'
-node1_name = 'af28@clnode274.clemson.cloudlab.us'
-node2_name = 'af28@clnode283.clemson.cloudlab.us'
+node1_name = 'af28@clnode281.clemson.cloudlab.us'
+node2_name = 'af28@clnode255.clemson.cloudlab.us'
 
 #command = "ssh your_username@hostname 'command1; command2; command3'"
 
@@ -31,8 +31,10 @@ def shell_escape(s):
     return s.replace("\"", "\"")
     #return s.replace("'", "\\'").replace("\"", "\\\\\\\"")
 
+perf_tracking = 'perf'
+
 def run_taobench(single_socket, memsize, num_ccd, set_get_ratio, access_dist):
-    #os.system('truncate -s 0 benchpress.log')
+    os.system('truncate -s 0 benchpress.log')
     # Make output folder
     output_folder_name = f"memsize_{memsize}_numccd_{num_ccd}_accessdist_{access_dist.replace(':', '_')}_setgetratio_{set_get_ratio.replace(':', '_')}"
     if os.path.isdir(output_folder_name):
@@ -44,7 +46,10 @@ def run_taobench(single_socket, memsize, num_ccd, set_get_ratio, access_dist):
 
     # \"test_time\": 10,
     # \"warmup_time\": 10,
-    server_command = f"./benchpress_cli.py run tao_bench_autoscale -i '{{\"num_servers\": 1, \"interface_name\": \"{node0_interface}\", \"server_hostname\": \"10.10.1.1\", \"memsize\": {memsize}, \"single_socket\": {single_socket}, \"num_ccd\": {num_ccd}, \"set_get_ratio\": \"{set_get_ratio}\", \"access_dist\": \"{access_dist}\"}}'"
+    if perf_tracking == 'perf':
+        server_command = f"./benchpress_cli.py run tao_bench_autoscale -i '{{\"num_servers\": 1, \"interface_name\": \"{node0_interface}\", \"server_hostname\": \"10.10.1.1\", \"memsize\": {memsize}, \"single_socket\": {single_socket}, \"num_ccd\": {num_ccd}, \"set_get_ratio\": \"{set_get_ratio}\", \"access_dist\": \"{access_dist}\ -k perf"}}'"
+    else:
+        server_command = f"./benchpress_cli.py run tao_bench_autoscale -i '{{\"num_servers\": 1, \"interface_name\": \"{node0_interface}\", \"server_hostname\": \"10.10.1.1\", \"memsize\": {memsize}, \"single_socket\": {single_socket}, \"num_ccd\": {num_ccd}, \"set_get_ratio\": \"{set_get_ratio}\", \"access_dist\": \"{access_dist}\"}}'"
     print(server_command)
     process = subprocess.Popen(shlex.split(server_command), stdout=open(f"{output_folder_name}/top_command_out.txt", "w"))
 
@@ -68,8 +73,8 @@ def run_taobench(single_socket, memsize, num_ccd, set_get_ratio, access_dist):
                 client2_commands = ' '.join(client2_commands)
                 client2_commands = shell_escape(client2_commands)
 
-    client1_ssh_command = f"ssh -i /users/af28/.ssh/id_ed25519 {node1_name} \"sudo bash -c \\\"{client1_commands}\\\"\""
-    client2_ssh_command = f"ssh -i /users/af28/.ssh/id_ed25519 {node2_name} \"sudo bash -c \\\"{client2_commands}\\\"\""
+    client1_ssh_command = f"ssh -i /users/af28/.ssh/id_ed25519.pub {node1_name} \"sudo bash -c \\\"{client1_commands}\\\"\""
+    client2_ssh_command = f"ssh -i /users/af28/.ssh/id_ed25519.pub {node2_name} \"sudo bash -c \\\"{client2_commands}\\\"\""
 
     print(client1_ssh_command)
     print(client2_ssh_command)
@@ -101,13 +106,13 @@ def run_taobench(single_socket, memsize, num_ccd, set_get_ratio, access_dist):
 
     # Copy benchpress.log to the data output folder and clear its contents
     shutil.copyfile('benchpress.log', f'{output_folder_name}/benchpress.log')
-    #os.system('truncate -s 0 benchpress.log')
+    os.system('truncate -s 0 benchpress.log')
 
     # Move benchmark_metrics*
     os.system(f'mv benchmark_metrics* {output_folder_name}/')
 
     # Move vtune output in case it is needed
-    os.system(f'mv *ue {output_folder_name}/')
+    #os.system(f'mv *ue {output_folder_name}/')
 
     # Move client outputs and client benchpresses
     os.system(f'scp -i /users/af28/.ssh/id_ed25519 {node1_name}:/mydata/DCPerf/client1_out.txt /mydata/DCPerf/{output_folder_name}/client1_out.txt')
@@ -121,6 +126,9 @@ def run_taobench(single_socket, memsize, num_ccd, set_get_ratio, access_dist):
     
     time.sleep(30)
 
+# Vary number of cores
+
+"""
 # Experiment 1
 # See how memory footprint affects performance
 memsizes = [100, 50, 1]
@@ -160,3 +168,4 @@ for memsize in memsizes:
             for access_dist in access_dists:
                 run_taobench(1, memsize, num_ccd, set_get_ratio, access_dist)
 
+"""

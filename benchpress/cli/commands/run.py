@@ -123,7 +123,7 @@ class RunCommand(BenchpressCommand):
             try:
                 # need to add this since i'm trying to send the command over SSH and I can not for the life of me get it to send the quotes in the json string
                 # so this just adds the quotes if they are needed to the json string (benchmark arguments)
-                if 1: # SET THIS TO 1 if CLIENT AND 0 if SERVER
+                if 0: # SET THIS TO 1 if CLIENT AND 0 if SERVER
                     # Regular expression pattern to match words and non-word characters
                     pattern = r'([A-Za-z0-9_.]+|[^A-Za-z0-9_.])'
 

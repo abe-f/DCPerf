@@ -402,7 +402,7 @@
         - '--real'
       vars:
         - 'single_socket=0'
-        - 'num_ccd=8'
+        - 'core_list=all'
         - 'interface_name=eth0'
         - 'memsize=64'
         - 'port_number=11211'
@@ -452,8 +452,8 @@
       of benchpress.log for instructions on starting clients.
       MAKE SURE to start clients within 1 minute.
   args:
+    - '--core-list={core_list}'
     - '--single-socket={single_socket}'
-    - '--num-ccd={num_ccd}'
     - '--set-get-ratio={set_get_ratio}'
     - '--access-dist={access_dist}'
     - '--num-servers={num_servers}'
@@ -473,7 +473,7 @@
     - '--real'
   vars:
     - 'single_socket=1'
-    - 'num_ccd=4'
+    - 'core_list=all'
     - 'set_get_ratio=0:1'
     - 'access_dist=R:R'
     - 'num_servers=0'
