@@ -94,6 +94,7 @@ def compose_server_cmd(args, cpu_core_range, memsize, port_number):
         cpu_core_range,
         os.path.join(TAO_BENCH_DIR, "run.py"),
         "server",
+        #"--hard-binding",
         "--memsize",
         str(memsize),
         "--nic-channel-ratio",

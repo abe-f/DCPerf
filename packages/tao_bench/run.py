@@ -55,6 +55,7 @@ def run_cmd(
 
 def run_server(args):
     n_cores = len(os.sched_getaffinity(0))
+    print("ABE_PRINT: n_cores = " + str(n_cores))
     n_channels = int(n_cores * args.nic_channel_ratio)
     # set # channels
     try:
