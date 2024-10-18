@@ -76,3 +76,7 @@ plt.xlabel('Memory Size')
 plt.title('QPS for Various DRAM Capacity')
 plt.savefig('qps.png')
 
+
+
+# 1 Core: 8742.2 + 1337.8
+# 

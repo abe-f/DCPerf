@@ -80,8 +80,8 @@ def mips(grouped_df):
 
 @skip_if_missing
 def ipc(grouped_df):
-    cycles_series = grouped_df.get_group("cycles").counter_value
-    inst_series = grouped_df.get_group("instructions").counter_value
+    cycles_series = grouped_df.get_group("cycles").counter_value.astype(int)
+    inst_series = grouped_df.get_group("instructions").counter_value.astype(int)
     cycles_series.index = inst_series.index
 
     ipc_series = inst_series.div(cycles_series)
@@ -90,8 +90,8 @@ def ipc(grouped_df):
 
 @skip_if_missing
 def uops_per_instructions(grouped_df):
-    inst_series = grouped_df.get_group("instructions").counter_value
-    uops = grouped_df.get_group("retired_uops").counter_value
+    inst_series = grouped_df.get_group("instructions").counter_value.astype(int)
+    uops = grouped_df.get_group("retired_uops").counter_value.astype(int)
     uops.index = inst_series.index
     upi_series = uops.div(inst_series)
     return {"name": "UPI", "series": upi_series}
@@ -99,8 +99,8 @@ def uops_per_instructions(grouped_df):
 
 @skip_if_missing
 def uops_dispatched_opcache_per_instructions(grouped_df):
-    inst_series = grouped_df.get_group("instructions").counter_value
-    uops = grouped_df.get_group("de_uops_dispatch_opcache").counter_value
+    inst_series = grouped_df.get_group("instructions").counter_value.astype(int)
+    uops = grouped_df.get_group("de_uops_dispatch_opcache").counter_value.astype(int)
     uops.index = inst_series.index
     uop_cache_series = uops.div(inst_series)
     return {"name": "OPCache UOPS per Instructions", "series": uop_cache_series}
@@ -108,8 +108,8 @@ def uops_dispatched_opcache_per_instructions(grouped_df):
 
 @skip_if_missing
 def uops_dispatched_decoder_per_instructions(grouped_df):
-    inst_series = grouped_df.get_group("instructions").counter_value
-    uops = grouped_df.get_group("de_uops_dispatch_decoder").counter_value
+    inst_series = grouped_df.get_group("instructions").counter_value.astype(int)
+    uops = grouped_df.get_group("de_uops_dispatch_decoder").counter_value.astype(int)
     uops.index = inst_series.index
     uop_decoder_series = uops.div(inst_series)
     return {"name": "Decoder UOPS per Instructions", "series": uop_decoder_series}
@@ -117,8 +117,8 @@ def uops_dispatched_decoder_per_instructions(grouped_df):
 
 @skip_if_missing
 def microcoded_per_instructions(grouped_df):
-    inst_series = grouped_df.get_group("instructions").counter_value
-    microcoded = grouped_df.get_group("retired_microcoded_instructions").counter_value
+    inst_series = grouped_df.get_group("instructions").counter_value.astype(int)
+    microcoded = grouped_df.get_group("retired_microcoded_instructions").counter_value.astype(int)
     microcoded.index = inst_series.index
     microcode_series = microcoded.div(inst_series)
     return {"name": "Microcoded Instruction Rate", "series": microcode_series}
@@ -126,11 +126,11 @@ def microcoded_per_instructions(grouped_df):
 
 @skip_if_missing
 def frontend_stalls(grouped_df):
-    stalled_cycles_any = grouped_df.get_group("stalled_cycles.any").counter_value
+    stalled_cycles_any = grouped_df.get_group("stalled_cycles.any").counter_value.astype(int)
     stalled_cycles_back_pressure = grouped_df.get_group(
         "stalled_cycles.back_pressure"
-    ).counter_value
-    unhalted_cycles = grouped_df.get_group("cycles").counter_value
+    ).counter_value.astype(int)
+    unhalted_cycles = grouped_df.get_group("cycles").counter_value.astype(int)
     unhalted_cycles.index = stalled_cycles_any.index
     stalled_cycles_back_pressure.index = stalled_cycles_any.index
 
@@ -145,14 +145,14 @@ def frontend_stalls(grouped_df):
 
 @skip_if_missing
 def frontend_stalls_due_to_ic_miss(grouped_df):
-    stalled_cycles_any = grouped_df.get_group("stalled_cycles.any").counter_value
+    stalled_cycles_any = grouped_df.get_group("stalled_cycles.any").counter_value.astype(int)
     stalled_cycles_back_pressure = grouped_df.get_group(
         "stalled_cycles.back_pressure"
-    ).counter_value
+    ).counter_value.astype(int)
     stalled_cycles_idq_empty = grouped_df.get_group(
         "stalled_cycles.idq_empty"
-    ).counter_value
-    unhalted_cycles = grouped_df.get_group("cycles").counter_value
+    ).counter_value.astype(int)
+    unhalted_cycles = grouped_df.get_group("cycles").counter_value.astype(int)
     unhalted_cycles.index = stalled_cycles_any.index
     stalled_cycles_back_pressure.index = stalled_cycles_any.index
     stalled_cycles_idq_empty.index = stalled_cycles_any.index
@@ -170,10 +170,10 @@ def frontend_stalls_due_to_ic_miss(grouped_df):
 
 @skip_if_missing
 def backend_stalls(grouped_df):
-    unhalted_cycles = grouped_df.get_group("cycles").counter_value
+    unhalted_cycles = grouped_df.get_group("cycles").counter_value.astype(int)
     stalled_cycles_back_pressure = grouped_df.get_group(
         "stalled_cycles.back_pressure"
-    ).counter_value
+    ).counter_value.astype(int)
     unhalted_cycles.index = stalled_cycles_back_pressure.index
     stalled_cycles_be_series = stalled_cycles_back_pressure.div(unhalted_cycles)
     return {"name": "Backend Stalls", "series": stalled_cycles_be_series, "prefix": 100}
@@ -181,10 +181,10 @@ def backend_stalls(grouped_df):
 
 @skip_if_missing
 def branch_mispred_rate(grouped_df):
-    retired_branches = grouped_df.get_group("retired_branch_instructions").counter_value
+    retired_branches = grouped_df.get_group("retired_branch_instructions").counter_value.astype(int)
     retired_branches_mispred = grouped_df.get_group(
         "retired_branch_mispred"
-    ).counter_value
+    ).counter_value.astype(int)
     retired_branches.index = retired_branches_mispred.index
     branch_mispred_series = retired_branches_mispred.div(retired_branches)
     return {"name": "Branch Mispred %", "series": branch_mispred_series, "prefix": 100}
@@ -192,8 +192,8 @@ def branch_mispred_rate(grouped_df):
 
 @skip_if_missing
 def avg_mab_latency(grouped_df):
-    mab_clks = grouped_df.get_group("mab_alloc_clks").counter_value
-    pipe_allocs = grouped_df.get_group("mab_pipe_alloc").counter_value
+    mab_clks = grouped_df.get_group("mab_alloc_clks").counter_value.astype(int)
+    pipe_allocs = grouped_df.get_group("mab_pipe_alloc").counter_value.astype(int)
     mab_clks.index = pipe_allocs.index
     mab_clks_series = mab_clks.div(pipe_allocs)
     return {"name": "Avg. MAB Latency (CCLKS)", "series": mab_clks_series}
@@ -201,8 +201,8 @@ def avg_mab_latency(grouped_df):
 
 @skip_if_missing
 def l1_icache_mab_demand_requests_rate(grouped_df):
-    mab_demand = grouped_df.get_group("ic_mab_requests_demand").counter_value
-    mab_total = grouped_df.get_group("ic_mab_requests_total").counter_value
+    mab_demand = grouped_df.get_group("ic_mab_requests_demand").counter_value.astype(int)
+    mab_total = grouped_df.get_group("ic_mab_requests_total").counter_value.astype(int)
     mab_demand.index = mab_total.index
     mab_demand_series = mab_demand.div(mab_total)
     return {"name": "L1 ICache MAB Demand Request Rate", "series": mab_demand_series}
@@ -210,8 +210,8 @@ def l1_icache_mab_demand_requests_rate(grouped_df):
 
 @skip_if_missing
 def l1_icache_mab_prefetch_requests_rate(grouped_df):
-    mab_prefetch = grouped_df.get_group("ic_mab_requests_prefetch").counter_value
-    mab_total = grouped_df.get_group("ic_mab_requests_total").counter_value
+    mab_prefetch = grouped_df.get_group("ic_mab_requests_prefetch").counter_value.astype(int)
+    mab_total = grouped_df.get_group("ic_mab_requests_total").counter_value.astype(int)
     mab_prefetch.index = mab_total.index
     mab_prefetch_series = mab_prefetch.div(mab_total)
     return {
@@ -222,8 +222,8 @@ def l1_icache_mab_prefetch_requests_rate(grouped_df):
 
 @skip_if_missing
 def l1_icache_miss_rate(grouped_df):
-    l1_ic_fetches = grouped_df.get_group("l1_ic_fetches").counter_value
-    l1_ic_misses = grouped_df.get_group("l1_ic_misses").counter_value
+    l1_ic_fetches = grouped_df.get_group("l1_ic_fetches").counter_value.astype(int)
+    l1_ic_misses = grouped_df.get_group("l1_ic_misses").counter_value.astype(int)
     l1_ic_fetches.index = l1_ic_misses.index
     l1_ic_misses_pct_series = l1_ic_misses.div(l1_ic_fetches)
     return {
@@ -235,8 +235,8 @@ def l1_icache_miss_rate(grouped_df):
 
 @skip_if_missing
 def l1_icache_mpki(grouped_df):
-    l1_ic_misses = grouped_df.get_group("l1_ic_misses").counter_value
-    inst_series = grouped_df.get_group("instructions").counter_value
+    l1_ic_misses = grouped_df.get_group("l1_ic_misses").counter_value.astype(int)
+    inst_series = grouped_df.get_group("instructions").counter_value.astype(int)
     inst_series.index = l1_ic_misses.index
     l1_icache_mpki_series = l1_ic_misses.div(inst_series)
     return {
@@ -248,8 +248,8 @@ def l1_icache_mpki(grouped_df):
 
 @skip_if_missing
 def l1_icache_fills_l2_ratio(grouped_df):
-    fills_l2 = grouped_df.get_group("ic_cache_fill_l2").counter_value
-    fills_sys = grouped_df.get_group("ic_cache_fill_sys").counter_value
+    fills_l2 = grouped_df.get_group("ic_cache_fill_l2").counter_value.astype(int)
+    fills_sys = grouped_df.get_group("ic_cache_fill_sys").counter_value.astype(int)
     fills_l2.index = fills_sys.index
     l1_icache_fills_l2_ratio_series = fills_l2.div(fills_l2 + fills_sys)
     return {
@@ -260,8 +260,8 @@ def l1_icache_fills_l2_ratio(grouped_df):
 
 @skip_if_missing
 def l1_icache_fills_sys_ratio(grouped_df):
-    fills_l2 = grouped_df.get_group("ic_cache_fill_l2").counter_value
-    fills_sys = grouped_df.get_group("ic_cache_fill_sys").counter_value
+    fills_l2 = grouped_df.get_group("ic_cache_fill_l2").counter_value.astype(int)
+    fills_sys = grouped_df.get_group("ic_cache_fill_sys").counter_value.astype(int)
     fills_l2.index = fills_sys.index
     l1_icache_fills_sys_ratio_series = fills_sys.div(fills_l2 + fills_sys)
     return {
@@ -272,8 +272,8 @@ def l1_icache_fills_sys_ratio(grouped_df):
 
 @skip_if_missing
 def l1_dcache_miss_rate(grouped_df):
-    l1_dc_fetches = grouped_df.get_group("l1_dc_accesses").counter_value
-    l1_dc_misses = grouped_df.get_group("l1_dc_misses").counter_value
+    l1_dc_fetches = grouped_df.get_group("l1_dc_accesses").counter_value.astype(int)
+    l1_dc_misses = grouped_df.get_group("l1_dc_misses").counter_value.astype(int)
     l1_dc_fetches.index = l1_dc_misses.index
     l1_dcache_miss_rate_series = l1_dc_misses.div(l1_dc_fetches)
     return {
@@ -285,8 +285,8 @@ def l1_dcache_miss_rate(grouped_df):
 
 @skip_if_missing
 def l1_dcache_mpki(grouped_df):
-    l1_dc_misses = grouped_df.get_group("l1_dc_misses").counter_value
-    inst_series = grouped_df.get_group("instructions").counter_value
+    l1_dc_misses = grouped_df.get_group("l1_dc_misses").counter_value.astype(int)
+    inst_series = grouped_df.get_group("instructions").counter_value.astype(int)
     inst_series.index = l1_dc_misses.index
     l1_dcache_mpki_series = l1_dc_misses.div(inst_series)
     return {
@@ -298,9 +298,9 @@ def l1_dcache_mpki(grouped_df):
 
 @skip_if_missing
 def l2_code_miss_rate(grouped_df):
-    l2_ic_requests_g1 = grouped_df.get_group("l2_ic_requests_g1").counter_value
-    l2_ic_requests_g2 = grouped_df.get_group("l2_ic_requests_g2").counter_value
-    l2_ic_hits = grouped_df.get_group("l2_ic_hits").counter_value
+    l2_ic_requests_g1 = grouped_df.get_group("l2_ic_requests_g1").counter_value.astype(int)
+    l2_ic_requests_g2 = grouped_df.get_group("l2_ic_requests_g2").counter_value.astype(int)
+    l2_ic_hits = grouped_df.get_group("l2_ic_hits").counter_value.astype(int)
 
     l2_ic_requests_g1.index = l2_ic_hits.index
     l2_ic_requests_g2.index = l2_ic_hits.index
@@ -314,10 +314,10 @@ def l2_code_miss_rate(grouped_df):
 
 @skip_if_missing
 def l2_code_mpki(grouped_df):
-    inst_series = grouped_df.get_group("instructions").counter_value
-    l2_ic_requests_g1 = grouped_df.get_group("l2_ic_requests_g1").counter_value
-    l2_ic_requests_g2 = grouped_df.get_group("l2_ic_requests_g2").counter_value
-    l2_ic_hits = grouped_df.get_group("l2_ic_hits").counter_value
+    inst_series = grouped_df.get_group("instructions").counter_value.astype(int)
+    l2_ic_requests_g1 = grouped_df.get_group("l2_ic_requests_g1").counter_value.astype(int)
+    l2_ic_requests_g2 = grouped_df.get_group("l2_ic_requests_g2").counter_value.astype(int)
+    l2_ic_hits = grouped_df.get_group("l2_ic_hits").counter_value.astype(int)
 
     inst_series.index = l2_ic_hits.index
     l2_ic_requests_g1.index = l2_ic_hits.index
@@ -331,8 +331,8 @@ def l2_code_mpki(grouped_df):
 
 @skip_if_missing
 def l2_data_miss_rate(grouped_df):
-    l2_dc_requests = grouped_df.get_group("l2_dc_requests").counter_value
-    l2_dc_hits = grouped_df.get_group("l2_dc_hits").counter_value
+    l2_dc_requests = grouped_df.get_group("l2_dc_requests").counter_value.astype(int)
+    l2_dc_hits = grouped_df.get_group("l2_dc_hits").counter_value.astype(int)
 
     l2_dc_hits.index = l2_dc_requests.index
     l2_dc_misses = l2_dc_requests - l2_dc_hits
@@ -342,9 +342,9 @@ def l2_data_miss_rate(grouped_df):
 
 @skip_if_missing
 def l2_data_mpki(grouped_df):
-    inst_series = grouped_df.get_group("instructions").counter_value
-    l2_dc_requests = grouped_df.get_group("l2_dc_requests").counter_value
-    l2_dc_hits = grouped_df.get_group("l2_dc_hits").counter_value
+    inst_series = grouped_df.get_group("instructions").counter_value.astype(int)
+    l2_dc_requests = grouped_df.get_group("l2_dc_requests").counter_value.astype(int)
+    l2_dc_hits = grouped_df.get_group("l2_dc_hits").counter_value.astype(int)
 
     inst_series.index = l2_dc_requests.index
     l2_dc_hits.index = l2_dc_requests.index
@@ -355,8 +355,8 @@ def l2_data_mpki(grouped_df):
 
 @skip_if_missing
 def llc_miss_rate(grouped_df):
-    llc_accesses = grouped_df.get_group("l3_acceses").counter_value
-    llc_misses = grouped_df.get_group("l3_misses").counter_value
+    llc_accesses = grouped_df.get_group("l3_acceses").counter_value.astype(int)
+    llc_misses = grouped_df.get_group("l3_misses").counter_value.astype(int)
     llc_misses.index = llc_accesses.index
     llc_miss_rate_series = llc_misses.div(llc_accesses)
     return {"name": "LLC Miss %", "series": llc_miss_rate_series, "prefix": 100}
@@ -364,8 +364,8 @@ def llc_miss_rate(grouped_df):
 
 @skip_if_missing
 def llc_mpki(grouped_df):
-    inst_series = grouped_df.get_group("instructions").counter_value
-    llc_misses = grouped_df.get_group("l3_misses").counter_value
+    inst_series = grouped_df.get_group("instructions").counter_value.astype(int)
+    llc_misses = grouped_df.get_group("l3_misses").counter_value.astype(int)
     llc_misses.index = inst_series.index
     llc_mpki_series = llc_misses.div(inst_series)
     return {"name": "LLC MPKI", "series": llc_mpki_series, "prefix": 1000}
@@ -373,9 +373,9 @@ def llc_mpki(grouped_df):
 
 @skip_if_missing
 def llc_avg_load_to_use_lat_clks(grouped_df):
-    l3_fill_rd_resp = grouped_df.get_group("l3_fill_rd_resp_lat").counter_value
-    l3_rd_resp_cnt = grouped_df.get_group("l3_rd_resp_cnt").counter_value
-    l3_fill_other = grouped_df.get_group("l3_fill_lat_other_rd_resp").counter_value
+    l3_fill_rd_resp = grouped_df.get_group("l3_fill_rd_resp_lat").counter_value.astype(int)
+    l3_rd_resp_cnt = grouped_df.get_group("l3_rd_resp_cnt").counter_value.astype(int)
+    l3_fill_other = grouped_df.get_group("l3_fill_lat_other_rd_resp").counter_value.astype(int)
 
     l3_rd_resp_cnt.index = l3_fill_rd_resp.index
     l3_fill_other.index = l3_fill_rd_resp.index
@@ -393,8 +393,8 @@ def llc_avg_load_to_use_lat_clks(grouped_df):
 # TODO(cltorres): Refactor mpki calculations into its own function
 @skip_if_missing
 def itlb_mpki(grouped_df):
-    inst_series = grouped_df.get_group("instructions").counter_value
-    itlb_misses = grouped_df.get_group("itlb_misses").counter_value
+    inst_series = grouped_df.get_group("instructions").counter_value.astype(int)
+    itlb_misses = grouped_df.get_group("itlb_misses").counter_value.astype(int)
     itlb_misses.index = inst_series.index
     itlb_mpki_series = itlb_misses.div(inst_series)
     return {"name": "iTLB MPKI", "series": itlb_mpki_series, "prefix": 1000}
@@ -402,8 +402,8 @@ def itlb_mpki(grouped_df):
 
 @skip_if_missing
 def l2_itlb_mpki(grouped_df):
-    inst_series = grouped_df.get_group("instructions").counter_value
-    l2_dtlb_misses = grouped_df.get_group("l2_itlb_misses").counter_value
+    inst_series = grouped_df.get_group("instructions").counter_value.astype(int)
+    l2_dtlb_misses = grouped_df.get_group("l2_itlb_misses").counter_value.astype(int)
     l2_dtlb_misses.index = inst_series.index
     l2_itlb_mpki_series = l2_dtlb_misses.div(inst_series)
     return {"name": "L2 iTLB MPKI", "series": l2_itlb_mpki_series, "prefix": 1000}
@@ -411,8 +411,8 @@ def l2_itlb_mpki(grouped_df):
 
 @skip_if_missing
 def l2_4k_itlb_mpki(grouped_df):
-    inst_series = grouped_df.get_group("instructions").counter_value
-    l2_4k_itlb_misses = grouped_df.get_group("l2_4k_itlb_misses").counter_value
+    inst_series = grouped_df.get_group("instructions").counter_value.astype(int)
+    l2_4k_itlb_misses = grouped_df.get_group("l2_4k_itlb_misses").counter_value.astype(int)
     l2_4k_itlb_misses.index = inst_series.index
     l2_4k_itlb_mpki_series = l2_4k_itlb_misses.div(inst_series)
     return {"name": "L2 4K iTLB MPKI", "series": l2_4k_itlb_mpki_series, "prefix": 1000}
@@ -420,8 +420,8 @@ def l2_4k_itlb_mpki(grouped_df):
 
 @skip_if_missing
 def l2_2m_itlb_mpki(grouped_df):
-    inst_series = grouped_df.get_group("instructions").counter_value
-    l2_2m_itlb_misses = grouped_df.get_group("l2_2m_itlb_misses").counter_value
+    inst_series = grouped_df.get_group("instructions").counter_value.astype(int)
+    l2_2m_itlb_misses = grouped_df.get_group("l2_2m_itlb_misses").counter_value.astype(int)
     l2_2m_itlb_misses.index = inst_series.index
     l2_2m_itlb_mpki_series = l2_2m_itlb_misses.div(inst_series)
     return {"name": "L2 2M iTLB MPKI", "series": l2_2m_itlb_mpki_series, "prefix": 1000}
@@ -429,8 +429,8 @@ def l2_2m_itlb_mpki(grouped_df):
 
 @skip_if_missing
 def l2_1g_itlb_mpki(grouped_df):
-    inst_series = grouped_df.get_group("instructions").counter_value
-    l2_1g_itlb_misses = grouped_df.get_group("l2_1g_itlb_misses").counter_value
+    inst_series = grouped_df.get_group("instructions").counter_value.astype(int)
+    l2_1g_itlb_misses = grouped_df.get_group("l2_1g_itlb_misses").counter_value.astype(int)
     l2_1g_itlb_misses.index = inst_series.index
     l2_1g_itlb_mpki_series = l2_1g_itlb_misses.div(inst_series)
     return {"name": "L2 1G iTLB MPKI", "series": l2_1g_itlb_mpki_series, "prefix": 1000}
@@ -438,8 +438,8 @@ def l2_1g_itlb_mpki(grouped_df):
 
 @skip_if_missing
 def dtlb_mpki(grouped_df):
-    inst_series = grouped_df.get_group("instructions").counter_value
-    dtlb_misses_series = grouped_df.get_group("dtlb_misses").counter_value
+    inst_series = grouped_df.get_group("instructions").counter_value.astype(int)
+    dtlb_misses_series = grouped_df.get_group("dtlb_misses").counter_value.astype(int)
     dtlb_misses_series.index = inst_series.index
     dtlb_mpki_series = dtlb_misses_series.div(inst_series)
     return {"name": "dTLB MPKI", "series": dtlb_mpki_series, "prefix": 1000}
@@ -447,8 +447,8 @@ def dtlb_mpki(grouped_df):
 
 @skip_if_missing
 def l1_4k_dtlb_mpki(grouped_df):
-    inst_series = grouped_df.get_group("instructions").counter_value
-    l2_4k_dtlb_misses = grouped_df.get_group("l1_4k_dtlb_misses").counter_value
+    inst_series = grouped_df.get_group("instructions").counter_value.astype(int)
+    l2_4k_dtlb_misses = grouped_df.get_group("l1_4k_dtlb_misses").counter_value.astype(int)
     l2_4k_dtlb_misses.index = inst_series.index
     l1_4k_dtlb_mpki_series = l2_4k_dtlb_misses.div(inst_series)
     return {"name": "L1 4K dTLB MPKI", "series": l1_4k_dtlb_mpki_series, "prefix": 1000}
@@ -456,8 +456,8 @@ def l1_4k_dtlb_mpki(grouped_df):
 
 @skip_if_missing
 def l1_2m_dtlb_mpki(grouped_df):
-    inst_series = grouped_df.get_group("instructions").counter_value
-    l2_2m_dtlb_misses = grouped_df.get_group("l1_2m_dtlb_misses").counter_value
+    inst_series = grouped_df.get_group("instructions").counter_value.astype(int)
+    l2_2m_dtlb_misses = grouped_df.get_group("l1_2m_dtlb_misses").counter_value.astype(int)
     l2_2m_dtlb_misses.index = inst_series.index
     l1_2m_dtlb_mpki_series = l2_2m_dtlb_misses.div(inst_series)
     return {"name": "L1 2M dTLB MPKI", "series": l1_2m_dtlb_mpki_series, "prefix": 1000}
@@ -465,8 +465,8 @@ def l1_2m_dtlb_mpki(grouped_df):
 
 @skip_if_missing
 def l1_1g_dtlb_mpki(grouped_df):
-    inst_series = grouped_df.get_group("instructions").counter_value
-    l2_1g_dtlb_misses = grouped_df.get_group("l1_1g_dtlb_misses").counter_value
+    inst_series = grouped_df.get_group("instructions").counter_value.astype(int)
+    l2_1g_dtlb_misses = grouped_df.get_group("l1_1g_dtlb_misses").counter_value.astype(int)
     l2_1g_dtlb_misses.index = inst_series.index
     l1_1g_dtlb_mpki_series = l2_1g_dtlb_misses.div(inst_series)
     return {"name": "L1 1G dTLB MPKI", "series": l1_1g_dtlb_mpki_series, "prefix": 1000}
@@ -474,8 +474,8 @@ def l1_1g_dtlb_mpki(grouped_df):
 
 @skip_if_missing
 def l2_dtlb_mpki(grouped_df):
-    inst_series = grouped_df.get_group("instructions").counter_value
-    l2_dtlb_misses = grouped_df.get_group("l2_dtlb_misses").counter_value
+    inst_series = grouped_df.get_group("instructions").counter_value.astype(int)
+    l2_dtlb_misses = grouped_df.get_group("l2_dtlb_misses").counter_value.astype(int)
     l2_dtlb_misses.index = inst_series.index
     l2_dtlb_mpki_series = l2_dtlb_misses.div(inst_series)
     return {"name": "L2 dTLB MPKI", "series": l2_dtlb_mpki_series, "prefix": 1000}
@@ -483,10 +483,15 @@ def l2_dtlb_mpki(grouped_df):
 
 @skip_if_missing
 def mem_read_bw_MBps(grouped_df):
+    return
     umc_c_read_requests = grouped_df.get_group("umc_c_read_requests").counter_value
     umc_g_read_requests = grouped_df.get_group("umc_g_read_requests").counter_value
     umc_c_cancels_issued = grouped_df.get_group("umc_c_cancels_issued").counter_value
     umc_g_cancels_issued = grouped_df.get_group("umc_g_cancels_issued").counter_value
+    if pd.concat([umc_c_read_requests, umc_g_read_requests, umc_c_cancels_issued, umc_g_cancels_issued]).isin(['<not counted>']).any():
+        return
+    #if any('<not counted>' in s for s in umc_c_read_requests.append(umc_g_read_requests).append(umc_c_cancels_issued).append(umc_g_cancels_issued)):
+        
     duration_series = get_duration_series(grouped_df.get_group("umc_c_read_requests"))
 
     umc_g_read_requests.index = umc_c_read_requests.index
@@ -505,12 +510,16 @@ def mem_read_bw_MBps(grouped_df):
 
 @skip_if_missing
 def mem_write_bw_MBps(grouped_df):
-    umc_c_write_requests = grouped_df.get_group("umc_c_write_requests").counter_value
-    umc_d_write_requests = grouped_df.get_group("umc_d_write_requests").counter_value
-    umc_g_write_requests = grouped_df.get_group("umc_g_write_requests").counter_value
-    umc_h_write_requests = grouped_df.get_group("umc_h_write_requests").counter_value
-    duration_series = get_duration_series(grouped_df.get_group("umc_c_write_requests"))
-
+    return
+    if pd.concat([umc_c_read_requests, umc_g_read_requests, umc_c_cancels_issued, umc_g_cancels_issued]).isin(['<not counted>']).any():
+        return
+    umc_c_write_requests = grouped_df.get_group("umc_c_write_requests").counter_value.astype(int)
+    umc_d_write_requests = grouped_df.get_group("umc_d_write_requests").counter_value.astype(int)
+    umc_g_write_requests = grouped_df.get_group("umc_g_write_requests").counter_value.astype(int)
+    umc_h_write_requests = grouped_df.get_group("umc_h_write_requests").counter_value.astype(int)
+    print(duration_series)
+    duration_series = get_duration_series(grouped_df.get_group("umc_c_write_requests")).astype(int)
+    
     umc_d_write_requests.index = umc_c_write_requests.index
     umc_g_write_requests.index = umc_c_write_requests.index
     umc_h_write_requests.index = umc_c_write_requests.index
