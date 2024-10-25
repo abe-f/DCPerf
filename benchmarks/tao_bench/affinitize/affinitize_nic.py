@@ -12,6 +12,8 @@ import os
 import sys
 import time
 
+from typing import Dict, Iterable, List, Optional, Set
+
 from affinitize_nic_lib import (
     collect_netdev_irqs,
     configure_netdev,
@@ -296,6 +298,8 @@ if __name__ == "__main__":
         if options.local_node:
             numa_affinitize = get_numa_node_for_netdev(netdev)
 
+        logging.info("options.cores = %s", options.cores)
+
         configure_netdev(
             netdev,
             rps=options.rps_enabled,
@@ -308,7 +312,8 @@ if __name__ == "__main__":
             ordered=options.ordered,
             xps=xps,
             dry_run=options.dry_run,
-            cores=options.cores,
+            cores=list(map(int, options.cores[0].strip("[]").split(","))),
+            #cores=[int(i) for i in options.cores],
         )
 
         if options.show:

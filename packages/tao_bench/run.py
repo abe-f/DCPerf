@@ -56,6 +56,7 @@ def run_cmd(
 def run_server(args):
     n_cores = len(os.sched_getaffinity(0))
     print("ABE_PRINT: n_cores = " + str(n_cores))
+    print("ABE_PRINT: os.sched_getaffinity(0) = " + str(os.sched_getaffinity(0)))
     n_channels = int(n_cores * args.nic_channel_ratio)
     # set # channels
     try:
@@ -74,7 +75,9 @@ def run_server(args):
         if args.hard_binding:
             cmd += [
                 "--cpu",
-                " ".join(str(x) for x in range(n_channels)),
+                #" ".join(str(x) for x in range(n_channels)),
+                str(list(os.sched_getaffinity(0))),
+                #" ".join(str(x) for x in os.sched_getaffinity(0)),
             ]
         else:
             cmd += [

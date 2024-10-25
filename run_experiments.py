@@ -4,11 +4,13 @@ import subprocess
 import shutil
 import shlex
 
-node0_interface = 'ens3f0'
-node1_name = 'af28@clnode186.clemson.cloudlab.us'
-node2_name = 'af28@clnode207.clemson.cloudlab.us'
+node0_interface = 'ens2f0'
+#node1_name = 'af28@clnode253.clemson.cloudlab.us'
+node1_name = 'af28@clnode294.clemson.cloudlab.us'
+node2_name = 'af28@clgpu011.clemson.cloudlab.us'
 perf_tracking = 'perf'
-vendor = 'amd' # or 'intel'
+ip_addr = '10.10.1.3'
+vendor = 'intel' # or 'amd'
 
 #command = "ssh your_username@hostname 'command1; command2; command3'"
 commands = 'sudo bash -c \' '
@@ -32,24 +34,32 @@ def shell_escape(s):
     return s.replace("\"", "\"")
     #return s.replace("'", "\\'").replace("\"", "\\\\\\\"")
 
-def run_taobench(single_socket, memsize, num_cores, set_get_ratio, access_dist):
+def run_taobench(single_socket, memsize, num_cores, set_get_ratio, access_dist, ways, bw):
     os.system('truncate -s 0 benchpress.log')
 
     cpu_mask = ''
     if vendor == 'intel':
-        cpu_mask = ','.join([str(2 * i) for i in range(num_cores * 2)])
+        cpu_mask = ','.join([str(2 * i) for i in range(num_cores)] + [str(2*i+72) for i in range(num_cores)])
     elif vendor == 'amd':
         cpu_mask = ','.join([str(i) for i in range(num_cores)] + [str(i + 64) for i in range(num_cores)])
     else:
         return
-
+    
     # Make output folder
-    output_folder_name = f"memsize_{memsize}_numcores_{num_cores}_accessdist_{access_dist.replace(':', '_')}_setgetratio_{set_get_ratio.replace(':', '_')}"
+    output_folder_name = f"memsize_{memsize}_numcores_{num_cores}_accessdist_{access_dist.replace(':', '_')}_setgetratio_{set_get_ratio.replace(':', '_')}_ways_{str(ways)}_bw_{str(bw)}"
     if os.path.isdir(output_folder_name):
         print(f'Skipping run due to folder ({output_folder_name}) already existing')
         return
 
-    print(output_folder_name)
+    os.system("intel-cmt-cat/pqos/pqos -R")
+
+    hex_ways = '{:03x}'.format((1 << ways) - 1)
+    os.system(f'intel-cmt-cat/pqos/pqos -e "llc:0=0x{hex_ways}"')
+    #print(f'intel-cmt-cat/pqos/pqos -e "llc:0=0x{hex_ways}"')
+    
+    os.system(f'intel-cmt-cat/pqos/pqos -e "mba:0={str(bw)}"')
+    #print(f'intel-cmt-cat/pqos/pqos -e "mba:0={str(bw)}"')
+
     os.system(f'mkdir {output_folder_name}')
 
     warmup_time = 1200 # default 1200
@@ -57,16 +67,16 @@ def run_taobench(single_socket, memsize, num_cores, set_get_ratio, access_dist):
     # \"test_time\": 10,
     # \"warmup_time\": 10,
     if perf_tracking == 'perf':
-        #server_command = f"./benchpress_cli.py run tao_bench_autoscale -i '{{\"num_servers\": 1, \"interface_name\": \"{node0_interface}\", \"server_hostname\": \"10.10.1.1\", \"memsize\": {memsize}, \"single_socket\": {single_socket}, \"num_ccd\": {num_ccd}, \"set_get_ratio\": \"{set_get_ratio}\", \"access_dist\": \"{access_dist}\ -k perf"}}'"
+        #server_command = f"./benchpress_cli.py run tao_bench_autoscale -i '{{\"num_servers\": 1, \"interface_name\": \"{node0_interface}\", \"server_hostname\": \"{ip_addr}\", \"memsize\": {memsize}, \"single_socket\": {single_socket}, \"num_ccd\": {num_ccd}, \"set_get_ratio\": \"{set_get_ratio}\", \"access_dist\": \"{access_dist}\ -k perf"}}'"
         #  taskset -c 0,64 ./benchpress_cli.py run tao_bench_autoscale -i '{"num_servers": 1, "interface_name": "ens3f0", "server_hostname": "10.10.1.1", "memsize": 100, "single_socket": 1, "set_get_ratio": "0_1", "access_dist": "R_R"}' -k perf
 
         # This is the right command, just commenting it out now
-        #server_command = f"taskset -c {cpu_mask} ./benchpress_cli.py run tao_bench_autoscale -i '{{\"num_servers\": 1, \"interface_name\": \"{node0_interface}\", \"server_hostname\": \"10.10.1.1\", \"memsize\": {memsize}, \"single_socket\": {single_socket}, \"warmup_time\": {warmup_time}, \"test_time\": {test_time}, \"set_get_ratio\": \"{set_get_ratio}\", \"access_dist\": \"{access_dist}\"}}' -k perf"
+        server_command = f"taskset -c {cpu_mask} ./benchpress_cli.py run tao_bench_autoscale -i '{{\"num_servers\": 1, \"interface_name\": \"{node0_interface}\", \"server_hostname\": \"{ip_addr}\", \"memsize\": {memsize}, \"single_socket\": {single_socket}, \"warmup_time\": {warmup_time}, \"test_time\": {test_time}, \"set_get_ratio\": \"{set_get_ratio}\", \"access_dist\": \"{access_dist}\"}}' -k perf"
 
         # 2 server command
-        server_command = f"./benchpress_cli.py run tao_bench_autoscale -i '{{\"num_servers\": 2, \"interface_name\": \"{node0_interface}\", \"server_hostname\": \"10.10.1.1\", \"memsize\": {memsize}, \"single_socket\": {single_socket}, \"warmup_time\": {warmup_time}, \"test_time\": {test_time}, \"set_get_ratio\": \"{set_get_ratio}\", \"access_dist\": \"{access_dist}\"}}' -k perf"
+        #server_command = f"./benchpress_cli.py run tao_bench_autoscale -i '{{\"num_servers\": 2, \"interface_name\": \"{node0_interface}\", \"server_hostname\": \"{ip_addr}\", \"memsize\": {memsize}, \"single_socket\": {single_socket}, \"warmup_time\": {warmup_time}, \"test_time\": {test_time}, \"set_get_ratio\": \"{set_get_ratio}\", \"access_dist\": \"{access_dist}\"}}' -k perf"
     else:
-        server_command = f"taskset -c {cpu_mask} ./benchpress_cli.py run tao_bench_autoscale -i '{{\"num_servers\": 1, \"interface_name\": \"{node0_interface}\", \"server_hostname\": \"10.10.1.1\", \"memsize\": {memsize}, \"single_socket\": {single_socket}, \"warmup_time\": {warmup_time}, \"test_time\": {test_time}, \"set_get_ratio\": \"{set_get_ratio}\", \"access_dist\": \"{access_dist}\"}}'"
+        server_command = f"taskset -c {cpu_mask} ./benchpress_cli.py run tao_bench_autoscale -i '{{\"num_servers\": 1, \"interface_name\": \"{node0_interface}\", \"server_hostname\": \"{ip_addr}\", \"memsize\": {memsize}, \"single_socket\": {single_socket}, \"warmup_time\": {warmup_time}, \"test_time\": {test_time}, \"set_get_ratio\": \"{set_get_ratio}\", \"access_dist\": \"{access_dist}\"}}'"
     print(server_command)
     process = subprocess.Popen(shlex.split(server_command), stdout=open(f"{output_folder_name}/top_command_out.txt", "w"))
 
@@ -138,21 +148,76 @@ def run_taobench(single_socket, memsize, num_cores, set_get_ratio, access_dist):
     
     time.sleep(30)
 
+# [9, 18, 27, 36] core 0_1, R_R
+
+# 4, 8, 12 ways 0_1, R_R
+
+# 25, 50, 75, 100 membw
+
+# Reset
+# sudo pqos -R
+
+# Give COS0 8 ways
+# sudo pqos -e "llc:0=0FFx"
+
+# Give COS0 50% mem banwidth
+# sudo pqos -e "mba:0=50"
+
 # Vary number of cores
 memsizes = [64]
-#num_cores_list = [9, 18, 27, 36]
-num_cores_list = [1, 2, 4, 8, 16, 32]
+num_cores_list = [9, 18, 27, 36]
+#num_cores_list = [8, 16, 32]
 set_get_ratios = ['0_1']
 access_dists = ['R_R']
+wayss = [12]
+bws = [100]
+for memsize in memsizes:
+    for num_cores in num_cores_list:
+        for set_get_ratio in set_get_ratios:
+            for access_dist in access_dists:
+                for ways in wayss:
+                    for bw in bws:
+                        run_taobench(1, memsize, num_cores, set_get_ratio, access_dist, ways, bw)
+
+# Vary number of LLC ways
+memsizes = [64]
+num_cores_list = [36]
+set_get_ratios = ['0_1']
+access_dists = ['R_R']
+wayss = [4, 8, 12]
+bws = [100]
 
 for memsize in memsizes:
     for num_cores in num_cores_list:
         for set_get_ratio in set_get_ratios:
             for access_dist in access_dists:
-                run_taobench(1, memsize, num_cores, set_get_ratio, access_dist)
+                for ways in wayss:
+                    for bw in bws:
+                        run_taobench(1, memsize, num_cores, set_get_ratio, access_dist, ways, bw)
 
-run_taobench(0, 100, 64, '0_1', 'R_R')
+# Vary number of LLC ways
+memsizes = [64]
+num_cores_list = [36]
+#num_cores_list = [8, 16, 32]
+set_get_ratios = ['0_1']
+access_dists = ['R_R']
+wayss = [12]
+bws = [30, 50, 80, 100]
 
+for memsize in memsizes:
+    for num_cores in num_cores_list:
+        for set_get_ratio in set_get_ratios:
+            for access_dist in access_dists:
+                for ways in wayss:
+                    for bw in bws:
+                        run_taobench(1, memsize, num_cores, set_get_ratio, access_dist, ways, bw)
+
+
+os.system("intel-cmt-cat/pqos/pqos -R")
+
+#run_taobench(0, 100, 64, '0_1', 'R_R', 12, 100)
+
+# 
 """
 # Experiment 1
 # See how memory footprint affects performance
